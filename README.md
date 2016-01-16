@@ -9,7 +9,7 @@ Run basic conversion, slicing, and spatial analysis
 | file name     | Description                    |
 | ------------- | ------------------------------ |
 | slice.py | slice tweets with given AOI and time |
-| spatial-analysis.py | for launching on EC2 |
+| spatial-analysis.py | produce spatial metrics (count, distribution) |
 
 
 ### Requirements:
