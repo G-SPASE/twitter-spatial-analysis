@@ -10,7 +10,7 @@ Run basic conversion, slicing, and spatial analysis
 | ------------- | ------------------------------ |
 | slice.py | slice tweets with given AOI and time |
 | spatial-analysis.py | produce spatial metrics (count, distribution) |
-
+| (estimate-nationality.py) | estimate nationality of users |
 
 ### Requirements:
 * Python 3.4 or later
