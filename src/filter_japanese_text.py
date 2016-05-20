@@ -1,29 +1,29 @@
-# filter_text
-# Last Update: 2015-11-06
+# Last Update: 2016-05-20
 # @author: Satoshi Miyazawa
 # koitaroh@gmail.com
 
 # Applies simple text filter, then apply MeCab filter to break down text into words (separated by space)
 
 import MeCab
-
 MECAB_MODE = 'mecabrc'
 PARSE_TEXT_ENCODING = 'utf-8'
 
-# Logging
+# Logging ver. 2016-05-20
+from logging import handlers
 import logging
-
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
-fh = logging.FileHandler('spam.log')
+fh = logging.handlers.RotatingFileHandler('log.log', maxBytes=1000000, backupCount=3)  # file handler
 fh.setLevel(logging.DEBUG)
-ch = logging.StreamHandler()
+ch = logging.StreamHandler()  # console handler
 ch.setLevel(logging.DEBUG)
 formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 ch.setFormatter(formatter)
 fh.setFormatter(formatter)
 logger.addHandler(fh)
 logger.addHandler(ch)
+logger.info('Initializing.')
+
 
 def text_filter(text):
     # "RT @user:"を削除
@@ -96,17 +96,27 @@ def mecab_parse(text):
     }
     return parsed_words_dict
 
+
 def dict_to_space_text_words(words_dict):
     words = " ".join(words_dict['all'])
     words = words.replace(',', ' ')
     return words
 
-if __name__ == '__main__':
-    logger.debug('initializing.')
-    # test_tweet = "RT @koitaroh: テストをします。"
-    test_tweet = "RT @test: I'm at アミューズメントパークエルロフト - @l_loft in 茨木市, 大阪府 https://t.co/Bgm813Qamu"
-    print(test_tweet)
-    tweet_text = text_filter(test_tweet)
+
+def filter_japanese_text(text):
+    tweet_text = text_filter(text)
     words_dict = mecab_parse(tweet_text)
     words = dict_to_space_text_words(words_dict)
-    print(words)
+    return words
+
+if __name__ == '__main__':
+    test_tweet = "RT @koitaroh: 本文が抽出できるかテストをします。"
+    # test_tweet = "RT @test: I'm at アミューズメントパークエルロフト - @l_loft in 茨木市, 大阪府 https://t.co/Bgm813Qamu"
+    logger.debug("Testing sample text: %s", test_tweet)
+    tweet_text = text_filter(test_tweet)
+    logger.debug(tweet_text)
+    words_dict = mecab_parse(tweet_text)
+    words = dict_to_space_text_words(words_dict)
+    logger.debug("Result run separately: %s", words)
+    words2 = filter_japanese_text(test_tweet)
+    logger.debug("Result run as one: %s", words2)
