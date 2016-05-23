@@ -33,7 +33,7 @@ consumer_secret = ****
 access_token_key = ****
 access_token_secret = ****
 
-[local_db]
+[remote_db]
 host = ****
 user = ****
 passwd = ****

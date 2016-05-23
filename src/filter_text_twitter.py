@@ -1,127 +1,61 @@
-import csv, pymysql, configparser, time
-import filter_japanese_text
+# Last Update: 2016-05-23
+# @author: Satoshi Miyazawa
+# koitaroh@gmail.com
+# Specify a table on a database. Apply filter_japanese_text.py on corresponding column.
 
-conf = configparser.ConfigParser()
-conf.read('../config.cfg')
+import pymysql
+import configparser
+import sqlalchemy
+from filter_japanese_text import filter_japanese_text
 
-local_db = {
-    "host": conf.get('local_db', 'host'),
-    "user": conf.get('local_db', 'user'),
-    "passwd": conf.get('local_db', 'passwd'),
-    "db_name": conf.get('local_db', 'db_name'),
-}
-
-rds_db = {
-    "host": conf.get('RDS', 'host'),
-    "user": conf.get('RDS', 'user'),
-    "passwd": conf.get('RDS', 'passwd'),
-    "db_name": conf.get('RDS', 'db_name'),
-}
-
-
-# Replace commas to spaces in a csv file
-def replace(inname, outname):
-    reader = csv.reader(open(inname, encoding="utf-8"))
-    # reader = csv.reader((line.replace('\0','') for line in inname), delimiter=",")
-    # writer = csv.writer(open('/Users/koitaroh/Documents/GitHub/GeoTweetCollector/data/tweet_table_20150317140247.csv', 'w', newline='', encoding="utf-8"))
-    writer = csv.writer(open(outname, 'w', newline='', encoding="utf-8"))
-    for row in reader:
-        for x in row:
-            x.replace('\0', '')
-            x.replace('\x00', '')
-            x.replace('\\', '')
-        # reader = csv.reader(x.replace('\0', '') for x in mycsv)
-        # data = csv.reader((line.replace('\0','') for line in inname), delimiter=",")
-        writer.writerow([row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7], row[8], row[9].replace(',', ' '), row[10].replace(',', ' '), row[11].replace(',', ' '), row[12].replace(',', ' ')])
-
-# Execute sql like insert, update
-def execute_sql(sql, db_info, is_commit = False):
-    connection = pymysql.connect(host = db_info["host"],
-                                 user = db_info["user"],
-                                 passwd = db_info["passwd"],
-                                 db = db_info["db_name"],
-                                 charset = "utf8mb4",
-                                 cursorclass=pymysql.cursors.SSDictCursor)
-    try:
-        with connection.cursor() as cursor:
-            cursor.execute(sql)
-        if is_commit:
-            connection.commit()
-        cursor.close()
-    finally:
-        connection.close()
-
-# Find commas in a column in a table
-def find_comma_db(db_info, table):
-    connection = pymysql.connect(host = db_info["host"],
-                                 user = db_info["user"],
-                                 passwd = db_info["passwd"],
-                                 db = db_info["db_name"],
-                                 charset = "utf8mb4",
-                                 cursorclass=pymysql.cursors.SSCursor)
-    sql = """
-    SELECT tweet_id, words FROM %s WHERE words like "%%,%%";
-    """ %(
-        table
-    )
-    try:
-
-        cursor = connection.cursor()
-        t0 = time.time()
-        results = cursor.execute(sql)
-        t1 = time.time()
-
-        keys = []
-        for desc in cursor.description:
-            keys.append(desc[0])
-        for row in cursor:
-            tweet_id = row[keys.index('tweet_id')]
-            words = row[keys.index('words')]
-            words = words.replace(',', ' ')
-            words = words.replace('\n','')
-            words = words.replace('\r','')
-            words = words.replace("\"",'')
-            words = words.replace("\'",'')
-            words = words.replace("\\",'')
-            print(tweet_id, words)
-            # replace_comma_to_space_db(db_info, table, tweet_id, words)
+# Logging ver. 2016-05-20
+from logging import handlers
+import logging
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
+fh = logging.handlers.RotatingFileHandler('log.log', maxBytes=1000000, backupCount=3)  # file handler
+fh.setLevel(logging.DEBUG)
+ch = logging.StreamHandler()  # console handler
+ch.setLevel(logging.DEBUG)
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+ch.setFormatter(formatter)
+fh.setFormatter(formatter)
+logger.addHandler(fh)
+logger.addHandler(ch)
+logger.info('Initializing.')
 
 
-        # rows = cursor.fetchmany(size=100)
-        # # rows = cursor.fetchone()
-        # while rows:
-        #         for row in rows:
-        #             tweet_id = row['tweet_id']
-        #             words = row['words']
-        #             words = words.replace(',', ' ')
-        #             words = words.replace('\n','')
-        #             words = words.replace('\r','')
-        #             words = words.replace("\"",'')
-        #             words = words.replace("\'",'')
-        #             words = words.replace("\\",'')
-        #             print(tweet_id, words)
-        #             # replace_comma_to_space_db(db_info, table, tweet_id, words)
-        #         rows = cursor.fetchmany(size=100)
-        #         # rows = cursor.fetchone()
-        cursor.close()
-    finally:
-        connection.close()
-
-# Replace commas to spaces in a table
-def replace_comma_to_space_db(db_info, table, tweet_id, words):
-    sql = """
-    UPDATE %s set words = '%s' WHERE tweet_id = %s;
-    """ %(
-        table,
-        words,
-        tweet_id
-    )
-    execute_sql(sql, db_info, is_commit = True)
+def prepare_tweet_db(engine_conf, in_table):
+    engine = sqlalchemy.create_engine(engine_conf, echo=False)
+    conn = engine.connect()
+    conn
+    metadata = sqlalchemy.MetaData(engine)
+    table = sqlalchemy.Table(in_table, metadata, autoload=True, autoload_with=engine)
+    s = sqlalchemy.select([table.c.id, table.c.text]).where(table.c.text != None)
+    result = conn.execute(s)
+    for row in result.fetchall():
+        id = row['id']
+        text = row['text']
+        words = filter_japanese_text(text)
+        logger.debug(words)
+        stmt = table.update().where(table.c.id == id).values(words=words)
+        conn.execute(stmt)
+    result.close()
     return True
 
 if __name__ == '__main__':
-    # input shoud not include blank or corrupted lines
 
-    table_name = "tweet_table_201604_1"
-    find_comma_db(rds_db, table_name)
+    conf = configparser.ConfigParser()
+    conf.read('../config.cfg')
+    remote_db = {
+        "host": conf.get('RDS', 'host'),
+        "user": conf.get('RDS', 'user'),
+        "passwd": conf.get('RDS', 'passwd'),
+        "db_name": conf.get('RDS', 'db_name'),
+    }
+    engine_conf = "mysql+pymysql://" + remote_db["user"] + ":" + remote_db["passwd"] + "@" + remote_db["host"] + "/" + remote_db["db_name"] + "?charset=utf8mb4"
+    test1 = "帰るよー (@ 渋谷駅 (Shibuya Sta.) in 渋谷区, 東京都) https://t.co/UwXP9Gr0wJ check this out (http://t.co/nYHbleBtBT)"
+    test2 = "終電変わらず(｀・ω・´)ゞ @ 川崎駅にタッチ！ http://t.co/DJFKEEUW3n"
+    test3 = "月ザンギョ100とか200とかそら死ぬわな、と実感しつつある。 (@ ノロワレハウス II in 杉並区, 東京都) https://t.co/BkcI7uNigi"
+    prepare_tweet_db(engine_conf, "tweet_table_201501_test")
 
