@@ -1,2 +1,2 @@
-numpy
-tweepy
+mecab-python3
+PyMySql
