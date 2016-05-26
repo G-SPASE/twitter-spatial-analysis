@@ -143,8 +143,6 @@ def tweets_to_grid(engine_conf, table, st_units, outfile):
 
 
 if __name__ == '__main__':
-
-
     engine_conf = s.ENGINE_CONF
     table = s.TABLE
 
