@@ -4,9 +4,9 @@
 # Specify a table on a database. Apply filter_japanese_text.py on corresponding column.
 
 import pymysql
-import configparser
 import sqlalchemy
 from filter_japanese_text import filter_japanese_text
+import settings as s
 
 # Logging ver. 2016-05-20
 from logging import handlers
@@ -28,7 +28,6 @@ logger.info('Initializing.')
 def prepare_tweet_db(engine_conf, in_table):
     engine = sqlalchemy.create_engine(engine_conf, echo=False)
     conn = engine.connect()
-    conn
     metadata = sqlalchemy.MetaData(engine)
     table = sqlalchemy.Table(in_table, metadata, autoload=True, autoload_with=engine)
     s = sqlalchemy.select([table.c.id, table.c.text]).where(table.c.text != None)
@@ -45,15 +44,7 @@ def prepare_tweet_db(engine_conf, in_table):
 
 if __name__ == '__main__':
 
-    conf = configparser.ConfigParser()
-    conf.read('../config.cfg')
-    remote_db = {
-        "host": conf.get('RDS', 'host'),
-        "user": conf.get('RDS', 'user'),
-        "passwd": conf.get('RDS', 'passwd'),
-        "db_name": conf.get('RDS', 'db_name'),
-    }
-    engine_conf = "mysql+pymysql://" + remote_db["user"] + ":" + remote_db["passwd"] + "@" + remote_db["host"] + "/" + remote_db["db_name"] + "?charset=utf8mb4"
+    engine_conf = s.ENGINE_CONF
     test1 = "帰るよー (@ 渋谷駅 (Shibuya Sta.) in 渋谷区, 東京都) https://t.co/UwXP9Gr0wJ check this out (http://t.co/nYHbleBtBT)"
     test2 = "終電変わらず(｀・ω・´)ゞ @ 川崎駅にタッチ！ http://t.co/DJFKEEUW3n"
     test3 = "月ザンギョ100とか200とかそら死ぬわな、と実感しつつある。 (@ ノロワレハウス II in 杉並区, 東京都) https://t.co/BkcI7uNigi"
