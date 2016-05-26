@@ -10,9 +10,11 @@ Run basic filter, conversion, slicing, and spatial analysis
 | filter_japanese_text.py | Set of Mecab filters |
 | filter_text_nightley.py | Filter |
 | filter_text_twitter.py | Filter for typical tweet database |
-| (slice.py) | slice tweets with given AOI and time |
-| (spatial-analysis.py) | produce spatial metrics (count, distribution) |
-| (estimate-nationality.py) | estimate nationality of users |
+| convert_points_to_grid.py | Define spatiotemporal index for experiment. Slice tweets or gps to create density file |
+| convert_tweet_to_gensim.py | Slice tweets and convert to text files for gensim |
+| run_gensim_topicmodels.py | Run gensim topic modeling models to sliced tweets |
+| settings.py | Model and experiment settings |
+
 
 ### Requirements:
 * Python 3.4 or later
@@ -41,5 +43,11 @@ db_name = ****
 ```
 
 ### Workflow:
-1. Run filter_text_twitter.py
+1. Check and adjust settings.py
+Set model parameters, resource paths.
+
+2. Run filter_text_twitter.py
 This will apply filter for word segmentation.
+
+3. Run run_gensim_topicmodels.py
+This will run topic modeling
