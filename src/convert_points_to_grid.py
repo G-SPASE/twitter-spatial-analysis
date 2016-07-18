@@ -88,7 +88,6 @@ def gps_to_grid(st_units, outfile):
         filelist = files[0:30]
         logger.debug(filelist)
         for fn in filelist:
-            # density = numpy.zeros(st_units)
             with open(root + os.sep + fn) as csvfile:
                 reader = csv.reader(csvfile)
                 for row in reader:
