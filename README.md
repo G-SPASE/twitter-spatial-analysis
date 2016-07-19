@@ -1,7 +1,7 @@
 # twitter-spatial-analysis
 =========
 
-Run basic filter, conversion, slicing, and spatial analysis
+Run basic filter, conversion, slicing, and spatial analysis on Twitter data.
 
 ### src
 

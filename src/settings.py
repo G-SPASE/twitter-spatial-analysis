@@ -44,11 +44,15 @@ TIMEEND_TEXT = "20130731"
 AOI = [138.72, 34.9, 140.87, 36.28]  # Greater Tokyo Area
 UNIT_TEMPORAL = 60  # in minutes
 UNIT_SPATIAL = 0.01  # in degrees
+UNIT_SPATIAL_METER = 1000
 NUM_TOPIC = 50
+NEIGHBORHOOD_SPATIAL = 14 # for 28*28 image
+NEIGHBORHOOD_TEMPORAL = 0 # for one-time scale netowork. set 1 for 3-unit network.
+
 
 # Experiment resource files
 EXPERIMENT_DIR = "/Users/koitaroh/Documents/Data/Experiments/"
-DATA_DIR = "/Users/koitaroh/Documents/Data/GPS/2013/"
+GPS_DIR = "/Users/koitaroh/Documents/Data/GPS/2013/"
 MALLET_FILE = "/Users/koitaroh/Documents/GitHub/Mallet/bin/mallet"
 STOPLIST_FILE = "/Users/koitaroh/Documents/Data/Model/stoplist_jp.txt"
 
@@ -62,6 +66,7 @@ STOPLIST = set(line.strip() for line in open(STOPLIST_FILE))
 DOCNAMES = os.path.join(MODELS_DIR, MODEL_NAME+"_docnames.csv")
 TWEET_DF_NAME = os.path.join(MODELS_DIR, MODEL_NAME+".csv")
 TWEET_COUNTER_FILE = os.path.join(MODELS_DIR + "/tweet_counter.pkl")
+GPS_COUNTER_FILE = os.path.join(MODELS_DIR + "/gps_counter.pkl")
 LSI_counter_file_1 = os.path.join(MODELS_DIR, MODEL_NAME+"_lsi_1.pkl")
 LSI_counter_file_2 = os.path.join(MODELS_DIR, MODEL_NAME+"_lsi_2.pkl")
 LDA_counter_file_1 = os.path.join(MODELS_DIR, MODEL_NAME+"_lda.pkl")
@@ -69,3 +74,4 @@ LDA_counter_file_2 = os.path.join(MODELS_DIR, MODEL_NAME+"_lda_2.pkl")
 HDP_counter_file_1 = os.path.join(MODELS_DIR, MODEL_NAME+"_hdp.pkl")
 HDP_counter_file_2 = os.path.join(MODELS_DIR, MODEL_NAME+"_hdp_2.pkl")
 OUTDIR = os.path.join(MODELS_DIR, MODEL_NAME+"/")
+
